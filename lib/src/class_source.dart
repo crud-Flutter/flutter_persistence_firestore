@@ -1,55 +1,10 @@
-abstract class GenerateClass {
-  String name;
-  String classPrefix;
-  String classSuffix;
-  String parentClass;
-  StringBuffer generateClass = new StringBuffer();
-  GenerateClass(this.classPrefix, {this.classSuffix, this.parentClass}) {
-    this.name = this.classPrefix;
-    if (this.classSuffix != null) {
-      this.name += this.classSuffix;
-    }
-    addImports();
-    _setClass();
-  }
+import 'package:crud_generator/crud_generator.dart';
 
-  _setClass() {
-    String declaredClass = 'class $name';
-    if (this.parentClass != null) {
-      declaredClass += ' extends $parentClass';
-    }
-    declaredClass += ' {';
-    generateClass.writeln(declaredClass);
-  }
-
-  constructorEmpty() {
-    generateClass.writeln('$name();');
-  }
-
-  String build() {
-    generateClass.write('}');
-    return generateClass.toString();
-  }
-
-  addImports();
-}
-
-class GenerateModelClass extends GenerateClass {
-  Map<String, String> fields = new Map();
-
-  GenerateModelClass(String name) : super(name, classSuffix: 'Entity') {
+class GenerateEntityClass extends GenerateClass {
+  GenerateEntityClass(String name) : super(name, classSuffix: 'Entity') {
     generateClass.writeln('String _documentId;');
     this.constructorEmpty();
     generateClass.writeln('String documentId() => this._documentId;');
-  }
-
-  GenerateModelClass addField(String type, String name,
-      {bool persistField: false}) {
-    if (persistField) {
-      fields[name] = type;
-    }
-    generateClass.writeln('$type $name;');
-    return this;
   }
 
   _fromMap() {
@@ -95,16 +50,12 @@ class GenerateModelClass extends GenerateClass {
   }
 }
 
-class GenerateRepositoryClass extends GenerateClass {
-  String entityInstance;
-  String entityClassInstance;
-  String entityClass;
+class GenerateRepositoryClass extends GenerateEntityClassAbstract {
+  
   GenerateRepositoryClass(String name)
       : super(name, classSuffix: 'Repository') {
     // GenerateRepositoryClass(String name): super(name+'Repository', parentClass: 'Disposable') {
-    this.entityInstance = name.toLowerCase() + 'Entity';
-    this.entityClass = this.classPrefix + 'Entity';
-    this.entityClassInstance = '$entityClass $entityInstance';
+    
     _reference();
     _add();
     _update();
@@ -140,9 +91,8 @@ class GenerateRepositoryClass extends GenerateClass {
 
   @override
   addImports() {
-    String fileEntity = this.classPrefix.toLowerCase() + '.entity.dart';
-    generateClass.writeln('import \'$fileEntity\';');    
+    importEntity();
     generateClass
-        .writeln('import \'package:cloud_firestore/cloud_firestore.dart\';');    
+        .writeln('import \'package:cloud_firestore/cloud_firestore.dart\';');
   }
 }
