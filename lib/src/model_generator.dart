@@ -8,7 +8,7 @@ class EntityGenerator extends GeneratorForAnnotation<Entity> {
   @override
   generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) {
-    GenerateModelClass generateClass = new GenerateModelClass(element.name);    
+    GenerateEntityClass generateClass = new GenerateEntityClass(element.name);    
     var fieldAnnotation = TypeChecker.fromRuntime(Field);
     for (var field in (element as ClassElement).fields) {
       generateClass.addField(field.type.name, field.name,
