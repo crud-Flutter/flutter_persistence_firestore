@@ -12,6 +12,8 @@ dependencies:
   source_gen: ^0.9.4+6
   flutter_persistence_api:
     path: ../flutter_persistence_api
+  crud_generator:
+    path: ../crud_generator
 #  path: ^1.6.0
 
 dev_dependencies:
