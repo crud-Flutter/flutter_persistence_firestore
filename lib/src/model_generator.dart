@@ -8,7 +8,7 @@ class EntityGenerator extends GeneratorForAnnotation<Entity> {
   @override
   generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) {
-    GenerateEntityClass generateClass = new GenerateEntityClass(element.name);    
+    GenerateEntityClass generateClass = GenerateEntityClass(element.name);
     var fieldAnnotation = TypeChecker.fromRuntime(Field);
     for (var field in (element as ClassElement).fields) {
       generateClass.addField(field.type.name, field.name,
@@ -35,7 +35,7 @@ class GenerateEntityClass extends GenerateClass {
           generateClass
               .writeln('Timestamp timestamp = document.data[\'$name\'];');
           value =
-              'DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch)';
+              'document.data[\'$name\'] == null? null:DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch)';
         }
         generateClass.writeln('this.$name = $value;');
       });
