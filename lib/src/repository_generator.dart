@@ -6,18 +6,16 @@ import 'package:source_gen/source_gen.dart';
 
 class RepositoryGenerator extends GeneratorForAnnotation<Entity> {
   @override
-  generateForAnnotatedElement(Element element, ConstantReader annotation, BuildStep buildStep) {
+  generateForAnnotatedElement(
+      Element element, ConstantReader annotation, BuildStep buildStep) {
     return GenerateRepositoryClass(element.name).build();
   }
-  
 }
 
 class GenerateRepositoryClass extends GenerateEntityClassAbstract {
   
   GenerateRepositoryClass(String name)
       : super(name, classSuffix: 'Repository') {
-    // GenerateRepositoryClass(String name): super(name+'Repository', parentClass: 'Disposable') {
-    
     _reference();
     _add();
     _update();
@@ -26,9 +24,8 @@ class GenerateRepositoryClass extends GenerateEntityClassAbstract {
   }
 
   _reference() {
-    String collection = this.classPrefix.toLowerCase();
     generateClass.writeln(
-        'CollectionReference _collection = Firestore.instance.collection(\'$collection\');');
+        'CollectionReference _collection = Firestore.instance.collection(\'$nameLowerCase\');');
   }
 
   _add() {
@@ -47,8 +44,8 @@ class GenerateRepositoryClass extends GenerateEntityClassAbstract {
   }
 
   _list() {
-    generateClass.writeln(
-        'Stream<List<$entityClass>> get $entityInstance => _collection.snapshots().map((snapshot) => snapshot.documents.map<$entityClass>((document) => $entityClass.fromMap(document)).toList());');
+    generateClass.writeln('Stream<List<$entityClass>> get $nameLowerCase'
+        's => _collection.snapshots().map((snapshot) => snapshot.documents.map<$entityClass>((document) => $entityClass.fromMap(document)).toList());');
   }
 
   @override
