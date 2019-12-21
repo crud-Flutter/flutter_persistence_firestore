@@ -1,76 +1,81 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/src/builder/build_step.dart';
-import 'package:flutter_persistence_api/flutter_persistence_api.dart';
+import 'package:flutter_persistence_api/flutter_persistence_api.dart'
+    as annotation;
 import 'package:crud_generator/crud_generator.dart';
 import 'package:source_gen/source_gen.dart';
-import 'package:code_builder/code_builder.dart' as code;
+import 'package:code_builder/code_builder.dart';
 
-class EntityGenerator extends GeneratorForAnnotation<Entity> {
+class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
+  TypeChecker fieldAnnotation = TypeChecker.fromRuntime(annotation.Field);
+
   @override
   generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) {
-    GenerateEntityClass generateClass = GenerateEntityClass(element.name);
-    var fieldAnnotation = TypeChecker.fromRuntime(Field);
-    for (var field in (element as ClassElement).fields) {
-      generateClass.addField(field.type.name, field.name,
-          persistField: fieldAnnotation.hasAnnotationOfExact(field));
-    }
-    return generateClass.build();
-  }
-}
-
-class GenerateEntityClass extends GenerateClass {
-  GenerateEntityClass(String name) : super(name, classSuffix: 'Entity') {
-    generateClass.fields.add(code.Field((b) => b
-      ..name = '_documentId'
-      ..type = code.refer('String')));
-    generateClass.methods.add(code.Method((b) => b
-      ..name = 'documentId'
-      ..lambda = true
-      ..body = code.Code('_documentId')));
+    name = '${element.name}Entity';
+    _declareField(element as ClassElement);
+    _constructorEmpty();
+    _methodFromMap(element as ClassElement);
+    _methodToMap(element as ClassElement);
+    _documentId();
+    return "import 'package:cloud_firestore/cloud_firestore.dart';\n" + build();
   }
 
-  _fromMap() {
-    if (fields.fieldsPersist().length > 0) {
-      List<code.Code> codes = List();
-      codes.add(code.Code('_documentId = document.documentID;'));
-      fields.fieldsPersist().forEach((name, type) {
-        String value = 'document.data[\'$name\'];';
-        if (type == 'DateTime') {
-          codes.add(
-              code.Code('Timestamp timestamp = document.data[\'$name\'];'));
-          value =
-              'document.data[\'$name\'] == null? null:DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch);';
+  void _constructorEmpty() {
+    declareConstructor();
+  }
+
+  void _documentId() {
+    declareField(refer('String'), '_documentId');
+    declareMethod('documentId',
+        lambda: true, returns: refer('String'), body: Code('_documentId'));
+  }
+
+  void _declareField(ClassElement classElement) {
+    classElement.fields.forEach((field) {
+      declareField(refer(field.type.name), field.name);
+    });
+  }
+
+  void _methodFromMap(ClassElement classElement) {
+    var fieldFromMap = BlockBuilder();
+
+    classElement.fields.forEach((field) {
+      if (fieldAnnotation.hasAnnotationOfExact(field)) {
+        if (field.type.name == 'DateTime') {
+          fieldFromMap.statements.add(
+              Code("Timestamp timestamp = document.data['${field.name}'];"));
+          fieldFromMap.statements.add(Code(
+              "document.data['${field.name}'] == null ? null: DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch);"));
+        } else {
+          fieldFromMap.statements
+              .add(Code("${field.name} = document.data['${field.name}'];"));
         }
-        codes.add(code.Code('$name = $value'));
-      });
-
-      generateClass.constructors.add(code.Constructor((b) => b
-        ..name = 'fromMap'
-        ..body = code.Block((b) => b..statements.addAll(codes))
-        ..requiredParameters.add(code.Parameter((b) => b
-          ..name = 'document'
-          ..type = code.refer('DocumentSnapshot')))));
+      }
+    });
+    if (fieldFromMap.statements.length > 0) {
+      declareConstructorNamed('fromMap', fieldFromMap.build(),
+          requiredParameters: [
+            Parameter((b) => b
+              ..name = 'document'
+              ..type = refer('DocumentSnapshot'))
+          ]);
     }
   }
 
-  _toMap() {
-    if (fields.fieldsPersist().length > 0) {
-      var codes = code.BlockBuilder();
-      codes.statements.add(code.Code('var map = new Map<String, dynamic>();'));
-      fields.fieldsPersist().forEach((name, type) {
-        codes.statements.add(code.Code('map[\'$name\'] = this.$name;'));
-      });
-      generateClass.methods.add(code.Method((b) => b
-        ..name = 'toMap'
-        ..body = codes.build()));
+  void _methodToMap(ClassElement classElement) {
+    var fieldToMap = BlockBuilder();
+    classElement.fields.forEach((field) {
+      if (fieldAnnotation.hasAnnotationOfExact(field)) {
+        fieldToMap.statements
+            .add(Code('map[\'${field.name}\'] = this.${field.name};'));
+      }
+    });
+    if (fieldToMap.statements.length > 0) {
+      fieldToMap.statements
+          .insert(0, Code('var map = new Map<String, dynamic>();'));
+      declareMethod('toMap',
+          returns: refer('Map<String, dynamic>'), body: fieldToMap.build());
     }
-  }
-
-  String build() {
-    this._fromMap();
-    this._toMap();
-    return 'import \'package:cloud_firestore/cloud_firestore.dart\';\n' +
-        super.build();
   }
 }
