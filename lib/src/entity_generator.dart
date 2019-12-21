@@ -24,6 +24,10 @@ class GenerateEntityClass extends GenerateClass {
     generateClass.fields.add(code.Field((b) => b
       ..name = '_documentId'
       ..type = code.refer('String')));
+    generateClass.methods.add(code.Method((b) => b
+      ..name = 'documentId'
+      ..lambda = true
+      ..body = code.Code('_documentId')));
   }
 
   _fromMap() {
