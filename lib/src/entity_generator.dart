@@ -3,6 +3,7 @@ import 'package:build/src/builder/build_step.dart';
 import 'package:flutter_persistence_api/flutter_persistence_api.dart';
 import 'package:crud_generator/crud_generator.dart';
 import 'package:source_gen/source_gen.dart';
+import 'package:code_builder/code_builder.dart' as code;
 
 class EntityGenerator extends GeneratorForAnnotation<Entity> {
   @override
@@ -20,50 +21,52 @@ class EntityGenerator extends GeneratorForAnnotation<Entity> {
 
 class GenerateEntityClass extends GenerateClass {
   GenerateEntityClass(String name) : super(name, classSuffix: 'Entity') {
-    generateClass.writeln('String _documentId;');
-    this.constructorEmpty();
-    generateClass.writeln('String documentId() => this._documentId;');
+    generateClass.fields.add(code.Field((b) => b
+      ..name = '_documentId'
+      ..type = code.refer('String')));
   }
 
   _fromMap() {
-    if (fields.length > 0) {
-      generateClass.writeln('$name.fromMap(DocumentSnapshot document) {');
-      generateClass.writeln('_documentId = document.documentID;');
-      fields.forEach((name, type) {
-        String value = 'document.data[\'$name\']';
+    if (fields.fieldsPersist().length > 0) {
+      List<code.Code> codes = List();
+      codes.add(code.Code('_documentId = document.documentID;'));
+      fields.fieldsPersist().forEach((name, type) {
+        String value = 'document.data[\'$name\'];';
         if (type == 'DateTime') {
-          generateClass
-              .writeln('Timestamp timestamp = document.data[\'$name\'];');
+          codes.add(
+              code.Code('Timestamp timestamp = document.data[\'$name\'];'));
           value =
-              'document.data[\'$name\'] == null? null:DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch)';
+              'document.data[\'$name\'] == null? null:DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch);';
         }
-        generateClass.writeln('this.$name = $value;');
+        codes.add(code.Code('$name = $value'));
       });
-      generateClass.writeln('}');
+
+      generateClass.constructors.add(code.Constructor((b) => b
+        ..name = 'fromMap'
+        ..body = code.Block((b) => b..statements.addAll(codes))
+        ..requiredParameters.add(code.Parameter((b) => b
+          ..name = 'document'
+          ..type = code.refer('DocumentSnapshot')))));
     }
   }
 
   _toMap() {
-    if (fields.length > 0) {
-      generateClass.writeln('toMap() {');
-      generateClass.writeln('var map = new Map<String, dynamic>();');
-      fields.forEach((name, type) {
-        generateClass.writeln('map[\'$name\'] = this.$name;');
+    if (fields.fieldsPersist().length > 0) {
+      var codes = code.BlockBuilder();
+      codes.statements.add(code.Code('var map = new Map<String, dynamic>();'));
+      fields.fieldsPersist().forEach((name, type) {
+        codes.statements.add(code.Code('map[\'$name\'] = this.$name;'));
       });
-      generateClass.writeln('return map;');
-      generateClass.writeln('}');
+      generateClass.methods.add(code.Method((b) => b
+        ..name = 'toMap'
+        ..body = codes.build()));
     }
   }
 
   String build() {
     this._fromMap();
     this._toMap();
-    return super.build();
-  }
-
-  @override
-  addImports() {
-    generateClass
-        .writeln('import \'package:cloud_firestore/cloud_firestore.dart\';');
+    return 'import \'package:cloud_firestore/cloud_firestore.dart\';\n' +
+        super.build();
   }
 }
