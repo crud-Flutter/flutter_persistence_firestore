@@ -19,7 +19,7 @@ class RepositoryGenerator extends GenerateEntityClassForAnnotation<Entity> {
     return build();
   }
 
-  _referenceField() {
+  void _referenceField() {
     declareField(
         refer('CollectionReference',
             'package:cloud_firestore/cloud_firestore.dart'),
@@ -28,7 +28,7 @@ class RepositoryGenerator extends GenerateEntityClassForAnnotation<Entity> {
             "Firestore.instance.collection('${element.name.toLowerCase()}')"));
   }
 
-  _methodAdd() {
+  void _methodAdd() {
     declareMethod('add',
         returns: refer('Future<String>'),
         requiredParameters: [
@@ -42,7 +42,7 @@ class RepositoryGenerator extends GenerateEntityClassForAnnotation<Entity> {
         modifier: MethodModifier.async);
   }
 
-  _methodUpdate() {
+  void _methodUpdate() {
     declareMethod('update',
         returns: refer('Future<void>'),
         requiredParameters: [
@@ -58,7 +58,7 @@ class RepositoryGenerator extends GenerateEntityClassForAnnotation<Entity> {
             '_collection.document(documentId).updateData($entityInstance.toMap())'));
   }
 
-  _methodDelete() {
+  void _methodDelete() {
     declareMethod('delete',
         returns: refer('Future<void>'),
         requiredParameters: [
@@ -70,7 +70,7 @@ class RepositoryGenerator extends GenerateEntityClassForAnnotation<Entity> {
         body: Code(' _collection.document(documentId).delete()'));
   }
 
-  _methodList() {
+  void _methodList() {
     declareMethod('list',
         returns: refer('Stream<List<$entityClass>>'),
         lambda: true,
