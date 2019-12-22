@@ -6,9 +6,9 @@ builders:
     auto_apply: dependents
     build_to: source
 
-  # repository:
-  #   import: "package:flutter_persistence_firestore/builder.dart"
-  #   builder_factories: ["repositoryBuilder"]
-  #   build_extensions: {".dart": [".entity.dart"]}
-  #   auto_apply: dependents
-  #   build_to: source
+  repository:
+    import: "package:flutter_persistence_firestore/builder.dart"
+    builder_factories: ["repositoryBuilder"]
+    build_extensions: {".dart": [".entity.dart"]}
+    auto_apply: dependents
+    build_to: source
