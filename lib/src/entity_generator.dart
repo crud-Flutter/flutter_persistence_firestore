@@ -13,10 +13,11 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
   generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) {
     name = '${element.name}Entity';
-    _declareField(element as ClassElement);
+    this.element = element;
+    _declareField();
     _constructorEmpty();
-    _methodFromMap(element as ClassElement);
-    _methodToMap(element as ClassElement);
+    _methodFromMap();
+    _methodToMap();
     _documentIdFieldAndMethod();
     return "import 'package:cloud_firestore/cloud_firestore.dart';\n" + build();
   }
@@ -31,16 +32,16 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
         lambda: true, returns: refer('String'), body: Code('_documentId'));
   }
 
-  void _declareField(ClassElement classElement) {
-    classElement.fields.forEach((field) {
+  void _declareField() {
+    elementAsClass.fields.forEach((field) {
       declareField(refer(field.type.name), field.name);
     });
   }
 
-  void _methodFromMap(ClassElement classElement) {
+  void _methodFromMap() {
     var fieldFromMap = BlockBuilder();
 
-    classElement.fields.forEach((field) {
+    elementAsClass.fields.forEach((field) {
       if (fieldAnnotation.hasAnnotationOfExact(field)) {
         if (field.type.name == 'DateTime') {
           fieldFromMap.statements.add(
@@ -63,9 +64,9 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
     }
   }
 
-  void _methodToMap(ClassElement classElement) {
+  void _methodToMap() {
     var fieldToMap = BlockBuilder();
-    classElement.fields.forEach((field) {
+    elementAsClass.fields.forEach((field) {
       if (fieldAnnotation.hasAnnotationOfExact(field)) {
         fieldToMap.statements
             .add(Code('map[\'${field.name}\'] = this.${field.name};'));
