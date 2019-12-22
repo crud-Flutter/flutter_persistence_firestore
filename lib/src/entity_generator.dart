@@ -17,7 +17,7 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
     _constructorEmpty();
     _methodFromMap(element as ClassElement);
     _methodToMap(element as ClassElement);
-    _documentId();
+    _documentIdFieldAndMethod();
     return "import 'package:cloud_firestore/cloud_firestore.dart';\n" + build();
   }
 
@@ -25,7 +25,7 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
     declareConstructor();
   }
 
-  void _documentId() {
+  void _documentIdFieldAndMethod() {
     declareField(refer('String'), '_documentId');
     declareMethod('documentId',
         lambda: true, returns: refer('String'), body: Code('_documentId'));
