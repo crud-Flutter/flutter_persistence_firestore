@@ -16,7 +16,7 @@ class RepositoryGenerator extends GenerateEntityClassForAnnotation<Entity> {
     _methodUpdate();
     _methodDelete();
     _methodList();
-    return build();
+    return "import 'package:cloud_firestore/cloud_firestore.dart';\n" + build();
   }
 
   void _referenceField() {
