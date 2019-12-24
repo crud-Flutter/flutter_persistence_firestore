@@ -75,6 +75,7 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
     if (fieldToMap.statements.length > 0) {
       fieldToMap.statements
           .insert(0, Code('var map = new Map<String, dynamic>();'));
+      fieldToMap.statements.add(Code('return map;'));
       declareMethod('toMap',
           returns: refer('Map<String, dynamic>'), body: fieldToMap.build());
     }
