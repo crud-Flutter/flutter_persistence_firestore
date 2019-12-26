@@ -47,7 +47,7 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
           fieldFromMap.statements.add(
               Code("Timestamp timestamp = document.data['${field.name}'];"));
           fieldFromMap.statements.add(Code(
-              "document.data['${field.name}'] == null ? null: DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch);"));
+              "${field.name} = document.data['${field.name}'] == null ? null: DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch);"));
         } else {
           fieldFromMap.statements
               .add(Code("${field.name} = document.data['${field.name}'];"));
@@ -55,6 +55,7 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
       }
     });
     if (fieldFromMap.statements.length > 0) {
+      fieldFromMap.statements.insert(0, Code('_documentId = document.documentID;'));
       declareConstructorNamed('fromMap', fieldFromMap.build(),
           requiredParameters: [
             Parameter((b) => b
