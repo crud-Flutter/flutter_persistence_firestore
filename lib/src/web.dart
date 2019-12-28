@@ -7,7 +7,7 @@ class Firestore {
   String collection;
   fs.CollectionReference _collection;
   
-  Firestore(this.collection) {
+  Firestore(this.collection) {    
     _collection = firestore().collection(this.collection);
   }
 
@@ -32,6 +32,10 @@ class Firestore {
           .toList()));
     });
     return controller.stream;
+  }
+
+  static DateTime getDate(dynamic date) {
+    return date;
   }
 }
 
