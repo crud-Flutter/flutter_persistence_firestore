@@ -46,7 +46,7 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
       if (fieldAnnotation.hasAnnotationOfExact(field)) {
         if (field.type.name == 'DateTime') {
           fieldFromMap.statements.add(Code(
-              "${field.name} = Firestore.getDate(data['${field.name}']"));
+              "${field.name} = Firestore.getDate(data['${field.name}']);"));
         } else {
           fieldFromMap.statements
               .add(Code("${field.name} = data['${field.name}'];"));
