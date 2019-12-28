@@ -19,7 +19,8 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
     _methodFromMap();
     _methodToMap();
     _documentIdFieldAndMethod();
-    return "import 'package:cloud_firestore/cloud_firestore.dart';\n" + build();
+    return "import 'package:flutter_persistence_firestore/firestore.dart';" +
+        build();
   }
 
   void _constructorEmpty() {
@@ -44,10 +45,8 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
     elementAsClass.fields.forEach((field) {
       if (fieldAnnotation.hasAnnotationOfExact(field)) {
         if (field.type.name == 'DateTime') {
-          fieldFromMap.statements.add(
-              Code("Timestamp timestamp = data['${field.name}'];"));
           fieldFromMap.statements.add(Code(
-              "${field.name} = data['${field.name}'] == null ? null: DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch);"));
+              "${field.name} = Firestore.getDate(data['${field.name}']"));
         } else {
           fieldFromMap.statements
               .add(Code("${field.name} = data['${field.name}'];"));
@@ -55,8 +54,7 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
       }
     });
     if (fieldFromMap.statements.length > 0) {
-      fieldFromMap.statements
-          .insert(0, Code('_documentId = documentId;'));
+      fieldFromMap.statements.insert(0, Code('_documentId = documentId;'));
       declareConstructorNamed('fromMap', fieldFromMap.build(),
           requiredParameters: [
             Parameter((b) => b
