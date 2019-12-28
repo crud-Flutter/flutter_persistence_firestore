@@ -1,7 +1,7 @@
 class Firestore {
   String collection;
 
-  Firestore(this.collection) ;
+  Firestore(this.collection);
 
   Future<String> add(Map<String, dynamic> data) {
     throw 'Platform Not Supported!';
@@ -16,6 +16,10 @@ class Firestore {
   }
 
   Stream<dynamic> list() {
+    throw 'Platform Not Supported!';
+  }
+
+  static DateTime getDate(dynamic date) {
     throw 'Platform Not Supported!';
   }
 }
