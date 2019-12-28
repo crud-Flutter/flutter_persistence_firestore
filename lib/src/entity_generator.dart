@@ -45,22 +45,26 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
       if (fieldAnnotation.hasAnnotationOfExact(field)) {
         if (field.type.name == 'DateTime') {
           fieldFromMap.statements.add(
-              Code("Timestamp timestamp = document.data['${field.name}'];"));
+              Code("Timestamp timestamp = data['${field.name}'];"));
           fieldFromMap.statements.add(Code(
-              "${field.name} = document.data['${field.name}'] == null ? null: DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch);"));
+              "${field.name} = data['${field.name}'] == null ? null: DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch);"));
         } else {
           fieldFromMap.statements
-              .add(Code("${field.name} = document.data['${field.name}'];"));
+              .add(Code("${field.name} = data['${field.name}'];"));
         }
       }
     });
     if (fieldFromMap.statements.length > 0) {
-      fieldFromMap.statements.insert(0, Code('_documentId = document.documentID;'));
+      fieldFromMap.statements
+          .insert(0, Code('_documentId = documentId;'));
       declareConstructorNamed('fromMap', fieldFromMap.build(),
           requiredParameters: [
             Parameter((b) => b
-              ..name = 'document'
-              ..type = refer('DocumentSnapshot'))
+              ..name = 'documentId'
+              ..type = refer('String')),
+            Parameter((b) => b
+              ..name = 'data'
+              ..type = refer('Map<String, dynamic>'))
           ]);
     }
   }
