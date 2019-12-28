@@ -77,6 +77,6 @@ class RepositoryGenerator extends GenerateEntityClassForAnnotation<Entity> {
         returns: refer('Stream<List<$entityClass>>'),
         lambda: true,
         body: Code(
-            '_collection.snapshots().map((snapshot) => snapshot.documents.map<$entityClass>((document) => $entityClass.fromMap(document)).toList())'));
+            '_collection.snapshots().map((snapshot) => snapshot.documents.map<$entityClass>((document) => $entityClass.fromMap(document.documentID, document.data)).toList())'));
   }
 }
