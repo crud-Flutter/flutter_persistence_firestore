@@ -11,23 +11,24 @@ class RepositoryGenerator extends GenerateEntityClassForAnnotation<Entity> {
       Element element, ConstantReader annotation, BuildStep buildStep) {
     this.element = element;
     name = '${element.name}Repository';
-    _referenceField();
+    _declareField();
     _methodAdd();
     _methodUpdate();
     _methodDelete();
     _methodList();
-    return "import 'package:cloud_firestore/cloud_firestore.dart';\n"
+    return "import 'package:flutter_persistence_firestore/firestore.dart';"
+            "import 'dart:async';"
             "import '${element.name.toLowerCase()}.entity.dart';" +
         build();
   }
 
-  void _referenceField() {
+  void _declareField() {
     declareField(
-        refer('CollectionReference',
-            'package:cloud_firestore/cloud_firestore.dart'),
-        '_collection',
+        refer('Firestore',
+            'package:flutter_persistence_firestore/firestore.dart'),
+        'firestore',
         assignment: Code(
-            "Firestore.instance.collection('${element.name.toLowerCase()}')"));
+            "Firestore('${element.name.toLowerCase()}')"));
   }
 
   void _methodAdd() {
@@ -40,7 +41,7 @@ class RepositoryGenerator extends GenerateEntityClassForAnnotation<Entity> {
         ],
         lambda: true,
         body:
-            Code('(await _collection.add($entityInstance.toMap())).documentID'),
+            Code('firestore.add($entityInstance.toMap())'),
         modifier: MethodModifier.async);
   }
 
@@ -57,7 +58,7 @@ class RepositoryGenerator extends GenerateEntityClassForAnnotation<Entity> {
         ],
         lambda: true,
         body: Code(
-            '_collection.document(documentId).updateData($entityInstance.toMap())'));
+            'firestore.update(documentId, $entityInstance.toMap())'));
   }
 
   void _methodDelete() {
@@ -69,7 +70,7 @@ class RepositoryGenerator extends GenerateEntityClassForAnnotation<Entity> {
             ..type = refer('String'))
         ],
         lambda: true,
-        body: Code(' _collection.document(documentId).delete()'));
+        body: Code('firestore.delete(documentId)'));
   }
 
   void _methodList() {
@@ -77,6 +78,6 @@ class RepositoryGenerator extends GenerateEntityClassForAnnotation<Entity> {
         returns: refer('Stream<List<$entityClass>>'),
         lambda: true,
         body: Code(
-            '_collection.snapshots().map((snapshot) => snapshot.documents.map<$entityClass>((document) => $entityClass.fromMap(document.documentID, document.data)).toList())'));
+            'firestore.list().map((snapshot) => snapshot.documents.map<$entityClass>((document) => $entityClass.fromMap(document.documentID, document.data)).toList())'));
   }
 }
