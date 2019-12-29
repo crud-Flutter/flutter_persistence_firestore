@@ -12,21 +12,19 @@ class RepositoryGenerator extends GenerateEntityClassForAnnotation<Entity> {
     init();
     this.element = element;
     name = '${element.name}Repository';
+    addImportPackage('${element.name.toLowerCase()}.entity.dart');
     _declareField();
     _methodAdd();
     _methodUpdate();
     _methodDelete();
     _methodList();
-    return "import 'package:flutter_persistence_firestore/firestore.dart';"
-            "import 'dart:async';"
-            "import '${element.name.toLowerCase()}.entity.dart';" +
-        build();
+    return build();
   }
 
   void _declareField() {
+    addImportPackage('package:flutter_persistence_firestore/firestore.dart');
     declareField(
-        refer('Firestore',
-            'package:flutter_persistence_firestore/firestore.dart'),
+        refer('Firestore'),
         'firestore',
         assignment: Code(
             "Firestore('${element.name.toLowerCase()}')"));

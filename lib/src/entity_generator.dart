@@ -18,8 +18,7 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
     _methodFromMap();
     _methodToMap();
     _documentIdFieldAndMethod();
-    return "import 'package:flutter_persistence_firestore/firestore.dart';" +
-        build();
+    return build();
   }
 
   void _constructorEmpty() {
@@ -46,6 +45,8 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
         if (field.type.name == 'DateTime' ||
             field.type.name == 'Date' ||
             field.type.name == 'Time') {
+          addImportPackage(
+              'package:flutter_persistence_firestore/firestore.dart');
           fieldFromMap.statements.add(Code(
               "${field.name} = Firestore.getDate(data['${field.name}']);"));
         } else {
