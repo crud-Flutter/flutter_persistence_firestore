@@ -9,6 +9,7 @@ class RepositoryGenerator extends GenerateEntityClassForAnnotation<Entity> {
   @override
   generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) {
+    init();
     this.element = element;
     name = '${element.name}Repository';
     _declareField();

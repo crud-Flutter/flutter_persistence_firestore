@@ -10,6 +10,7 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
   @override
   generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) {
+    init();
     name = '${element.name}Entity';
     this.element = element;
     _declareField();
