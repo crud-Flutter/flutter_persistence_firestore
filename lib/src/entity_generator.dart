@@ -7,8 +7,6 @@ import 'package:source_gen/source_gen.dart';
 import 'package:code_builder/code_builder.dart';
 
 class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
-  TypeChecker fieldAnnotation = TypeChecker.fromRuntime(annotation.Field);
-
   @override
   generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) {
@@ -43,8 +41,10 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
     var fieldFromMap = BlockBuilder();
 
     elementAsClass.fields.forEach((field) {
-      if (fieldAnnotation.hasAnnotationOfExact(field)) {
-        if (field.type.name == 'DateTime') {
+      if (isFieldPersist(field)) {
+        if (field.type.name == 'DateTime' ||
+            field.type.name == 'Date' ||
+            field.type.name == 'Time') {
           fieldFromMap.statements.add(Code(
               "${field.name} = Firestore.getDate(data['${field.name}']);"));
         } else {
@@ -70,7 +70,7 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
   void _methodToMap() {
     var fieldToMap = BlockBuilder();
     elementAsClass.fields.forEach((field) {
-      if (fieldAnnotation.hasAnnotationOfExact(field)) {
+      if (isFieldPersist(field)) {
         fieldToMap.statements
             .add(Code('map[\'${field.name}\'] = this.${field.name};'));
       }
