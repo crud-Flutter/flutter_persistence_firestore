@@ -12,6 +12,8 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
       Element element, ConstantReader annotation, BuildStep buildStep) {
     init();
     name = '${element.name}Entity';
+    extend = refer('${element.name}');
+    addImportPackage('${element.name.toLowerCase()}.dart');
     this.element = element;
     _declareField();
     _constructorEmpty();
@@ -35,10 +37,7 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
     elementAsClass.fields.forEach((field) {
       if (isManyToOneField(field)) {
         addImportPackage(
-            '../${field.type.name.toLowerCase()}/${field.type.name.toLowerCase()}.entity.dart');
-        declareField(refer('${field.type.name}Entity'), '${field.name}Entity');
-      } else {
-        declareField(refer(field.type.name), field.name);
+            '../${field.type.name.toLowerCase()}/${field.type.name.toLowerCase()}.dart');
       }
     });
   }
@@ -58,7 +57,7 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
         } else if (isManyToOneField(field)) {
           var displayField = getDisplayField(annotation.ManyToOne, field);
           fieldFromMap.statements.add(Code(
-              "${field.name}Entity = ${field.type.name}Entity()..$displayField=data['${field.name}'];"));
+              "${field.name} = ${field.type.name}()..$displayField=data['${field.name}'];"));
         } else {
           fieldFromMap.statements
               .add(Code("${field.name} = data['${field.name}'];"));
@@ -86,7 +85,7 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
         if (isManyToOneField(field)) {
           var displayField = getDisplayField(annotation.ManyToOne, field);
           fieldToMap.statements.add(Code(
-              'map[\'${field.name}\'] = this.${field.name}Entity.${displayField};'));
+              'map[\'${field.name}\'] = this.${field.name}.${displayField};'));
         } else {
           fieldToMap.statements
               .add(Code('map[\'${field.name}\'] = this.${field.name};'));
