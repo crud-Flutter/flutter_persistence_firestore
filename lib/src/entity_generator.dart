@@ -33,7 +33,13 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
 
   void _declareField() {
     elementAsClass.fields.forEach((field) {
-      declareField(refer(field.type.name), field.name);
+      if (isManyToOneField(field)) {
+        addImportPackage(
+            '../${field.type.name.toLowerCase()}/${field.type.name.toLowerCase()}.entity.dart');
+        declareField(refer('${field.type.name}Entity'), '${field.name}Entity');
+      } else {
+        declareField(refer(field.type.name), field.name);
+      }
     });
   }
 
@@ -49,6 +55,10 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
               'package:flutter_persistence_firestore/firestore.dart');
           fieldFromMap.statements.add(Code(
               "${field.name} = Firestore.getDate(data['${field.name}']);"));
+        } else if (isManyToOneField(field)) {
+          var displayField = getDisplayField(annotation.ManyToOne, field);
+          fieldFromMap.statements.add(Code(
+              "${field.name}Entity = ${field.type.name}Entity()..$displayField=data['${field.name}'];"));
         } else {
           fieldFromMap.statements
               .add(Code("${field.name} = data['${field.name}'];"));
@@ -73,8 +83,14 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
     var fieldToMap = BlockBuilder();
     elementAsClass.fields.forEach((field) {
       if (isFieldPersist(field)) {
-        fieldToMap.statements
-            .add(Code('map[\'${field.name}\'] = this.${field.name};'));
+        if (isManyToOneField(field)) {
+          var displayField = getDisplayField(annotation.ManyToOne, field);
+          fieldToMap.statements.add(Code(
+              'map[\'${field.name}\'] = this.${field.name}Entity.${displayField};'));
+        } else {
+          fieldToMap.statements
+              .add(Code('map[\'${field.name}\'] = this.${field.name};'));
+        }
       }
     });
     if (fieldToMap.statements.length > 0) {

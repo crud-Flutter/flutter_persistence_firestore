@@ -18,16 +18,22 @@ class RepositoryGenerator extends GenerateEntityClassForAnnotation<Entity> {
     _methodUpdate();
     _methodDelete();
     _methodList();
+    _methodListManyToOne();
     return build();
   }
 
   void _declareField() {
     addImportPackage('package:flutter_persistence_firestore/firestore.dart');
-    declareField(
-        refer('Firestore'),
-        'firestore',
-        assignment: Code(
-            "Firestore('${element.name.toLowerCase()}')"));
+    declareField(refer('Firestore'), 'firestore',
+        assignment: Code("Firestore('${element.name.toLowerCase()}')"));
+    elementAsClass.fields.forEach((field) {
+      if (isManyToOneField(field)) {
+        addImportPackage(
+            '../${field.type.name.toLowerCase()}/${field.type.name.toLowerCase()}.repository.dart');
+        declareField(
+            refer('${field.type.name}Repository'), '${field.name}Repository');
+      }
+    });
   }
 
   void _methodAdd() {
@@ -39,8 +45,7 @@ class RepositoryGenerator extends GenerateEntityClassForAnnotation<Entity> {
             ..type = refer(entityClass))
         ],
         lambda: true,
-        body:
-            Code('firestore.add($entityInstance.toMap())'),
+        body: Code('firestore.add($entityInstance.toMap())'),
         modifier: MethodModifier.async);
   }
 
@@ -56,8 +61,7 @@ class RepositoryGenerator extends GenerateEntityClassForAnnotation<Entity> {
             ..type = refer(entityClass))
         ],
         lambda: true,
-        body: Code(
-            'firestore.update(documentId, $entityInstance.toMap())'));
+        body: Code('firestore.update(documentId, $entityInstance.toMap())'));
   }
 
   void _methodDelete() {
@@ -78,5 +82,20 @@ class RepositoryGenerator extends GenerateEntityClassForAnnotation<Entity> {
         lambda: true,
         body: Code(
             'firestore.list().map((snapshot) => snapshot.documents.map<$entityClass>((document) => $entityClass.fromMap(document.documentID, document.data)).toList())'));
+  }
+
+  void _methodListManyToOne() {
+    elementAsClass.fields.forEach((field) {
+      if (isManyToOneField(field)) {
+        addImportPackage(
+            '../${field.type.name.toLowerCase()}/${field.type.name.toLowerCase()}.repository.dart');
+        addImportPackage(
+            '../${field.type.name.toLowerCase()}/${field.type.name.toLowerCase()}.entity.dart');
+        declareMethod('list${field.type.name}',
+            returns: refer('Stream<List<${field.type.name}Entity>>'),
+            lambda: true,
+            body: Code("${field.name}Repository.list()"));
+      }
+    });
   }
 }
