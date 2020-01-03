@@ -8,9 +8,8 @@ class Firestore {
     _collection = fs.Firestore.instance.collection(this.collection);
   }
 
-  Future<String> add(Map<String, dynamic> data) async{
-    var add = await _collection.add(data);
-    return add.documentID;
+  Future<dynamic> add(Map<String, dynamic> data) {
+    return _collection.add(data);
   }
 
   Future<void> update(String documentId, Map<String, dynamic> data) {

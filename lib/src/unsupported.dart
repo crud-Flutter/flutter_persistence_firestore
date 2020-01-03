@@ -3,7 +3,7 @@ class Firestore {
 
   Firestore(this.collection);
 
-  Future<String> add(Map<String, dynamic> data) {
+  Future<dynamic> add(Map<String, dynamic> data) {
     throw 'Platform Not Supported!';
   }
 
