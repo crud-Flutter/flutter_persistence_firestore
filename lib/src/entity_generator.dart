@@ -38,6 +38,11 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
       if (isManyToOneField(field)) {
         addImportPackage(
             '../${field.type.name.toLowerCase()}/${field.type.name.toLowerCase()}.dart');
+      } else if (isOneToManyField(field)) {
+        var type = getGenericTypes(field.type);
+        addImportPackage(
+            '../${getGenericTypes(field.type).first.name.toLowerCase()}'
+            '/${getGenericTypes(field.type).first.name.toLowerCase()}.dart');
       }
     });
   }
@@ -58,6 +63,18 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
           var displayField = getDisplayField(annotation.ManyToOne, field);
           fieldFromMap.statements.add(Code(
               "${field.name} = ${field.type.name}()..$displayField=data['${field.name}'];"));
+        } else if (isOneToManyField(field)) {
+        fieldFromMap.statements.add(Code("if (data['${field.name}'] != null)"));
+          var displayField = getDisplayField(annotation.OneToMany, field);
+          var type = getGenericTypes(field.type).first.name;
+          var displayFieldType = (getGenericTypes(field.type).first.element as ClassElement)
+            .getField(getDisplayField(annotation.OneToMany, field))
+            .type
+            .name;
+          fieldFromMap.statements.add(Code(
+              "${field.name} = data['${field.name}'].map<$type>((${field.name}) => "
+              '${getGenericTypes(field.type).first.name}()..$displayField = '
+              '(${field.name}.keys.first as $displayFieldType)).toList();'));
         } else {
           fieldFromMap.statements
               .add(Code("${field.name} = data['${field.name}'];"));
@@ -86,6 +103,12 @@ class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
           var displayField = getDisplayField(annotation.ManyToOne, field);
           fieldToMap.statements.add(Code(
               'map[\'${field.name}\'] = this.${field.name}.${displayField};'));
+        } else if (isOneToManyField(field)) {
+          fieldToMap.statements.add(Code('if (${field.name} !=null)'));
+          var displayField = getDisplayField(annotation.OneToMany, field);
+          fieldToMap.statements.add(Code(
+              "map['${field.name}'] = this.${field.name}.map((${field.name}) =>"
+              "{${field.name}.$displayField: true}).toList();"));
         } else {
           fieldToMap.statements
               .add(Code('map[\'${field.name}\'] = this.${field.name};'));
