@@ -38,7 +38,7 @@ class RepositoryGenerator extends GenerateEntityClassForAnnotation<Entity> {
 
   void _methodAdd() {
     declareMethod('add',
-        returns: refer('Future<String>'),
+        returns: refer('Future<dynamic>'),
         requiredParameters: [
           Parameter((b) => b
             ..name = entityInstance
