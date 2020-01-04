@@ -6,21 +6,41 @@ import 'package:crud_generator/crud_generator.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:code_builder/code_builder.dart';
 
-class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity> {
+class EntityGenerator extends GenerateClassForAnnotation<annotation.Entity>
+    with GenerateManyToManyAnnotation {
+  EntityGenerator({bool generateImport, bool manyToMany}) {
+    this.generateImport = generateImport;
+    this.manyToMany = manyToMany;
+  }
   @override
   generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) {
     init();
-    name = '${element.name}Entity';
+    initManyToMany();
+    name = '${element.name}${manyToManyPosFix}Entity';
     extend = refer('${element.name}');
-    addImportPackage('${element.name.toLowerCase()}.dart');
+    addImportPackage('${element.name.toLowerCase()}.dart');    
     this.element = element;
     _declareField();
     _constructorEmpty();
     _methodFromMap();
     _methodToMap();
     _documentIdFieldAndMethod();
-    return build();
+    _classManyToMany();
+    return build(generateImport: !manyToMany) + manyToManyClass;
+  }
+
+  _classManyToMany() {
+    if (!manyToMany) {
+      elementAsClass.fields.forEach((field) {
+        if (isManyToManyField(field)) {
+          manyToManyClass +=
+              EntityGenerator(generateImport: false, manyToMany: true)
+                  .generateForAnnotatedElement(
+                      getGenericTypes(field.type).first.element, null, null);
+        }
+      });
+    }
   }
 
   void _constructorEmpty() {
