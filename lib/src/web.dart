@@ -4,15 +4,22 @@ import 'package:firebase/firestore.dart' as fs;
 import 'package:firebase/firebase.dart';
 
 class Firestore {
-  String collection;
   fs.CollectionReference _collection;
-  
-  Firestore(this.collection) {    
-    _collection = firestore().collection(this.collection);
+
+  Firestore(String collection) {
+    _collection = firestore().collection(collection);
+  }
+
+  Firestore.documentId(
+      String collection, String subCollection, String documentId) {
+    _collection = firestore()
+        .collection(collection)
+        .doc(documentId)
+        .collection(subCollection);
   }
 
   Future<dynamic> add(Map<String, dynamic> data) {
-    return _collection.add(data);    
+    return _collection.add(data);
   }
 
   Future<void> update(String documentId, Map<String, dynamic> data) {

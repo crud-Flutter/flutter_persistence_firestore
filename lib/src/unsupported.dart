@@ -1,7 +1,9 @@
 class Firestore {
-  String collection;
+  Firestore(String collection);
 
-  Firestore(this.collection);
+  Firestore.documentId(String collection, String subCollection, String documentId) {
+    throw 'Platform Not Supported!';
+  }
 
   Future<dynamic> add(Map<String, dynamic> data) {
     throw 'Platform Not Supported!';

@@ -1,11 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart' as fs;
 
 class Firestore {
-  String collection;
   fs.CollectionReference _collection;
 
-  Firestore(this.collection) {    
-    _collection = fs.Firestore.instance.collection(this.collection);
+  Firestore(String collection) {
+    _collection = fs.Firestore.instance.collection(collection);
+  }
+
+  Firestore.documentId(
+      String collection, String documentId, String subCollection) {
+    _collection = fs.Firestore.instance
+        .collection(collection)
+        .document(documentId)
+        .collection(subCollection);
   }
 
   Future<dynamic> add(Map<String, dynamic> data) {
@@ -13,7 +20,7 @@ class Firestore {
   }
 
   Future<void> update(String documentId, Map<String, dynamic> data) {
-    return _collection.document(documentId).updateData(data);    
+    return _collection.document(documentId).updateData(data);
   }
 
   Future<void> delete(String documentId) {
@@ -30,6 +37,6 @@ class Firestore {
     } else if (date is DateTime) {
       return date;
     }
-    return null;    
+    return null;
   }
 }
